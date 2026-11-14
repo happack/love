@@ -37,7 +37,7 @@
             width: 100%; height: 100%; object-fit: cover;
         }
 
-        /* Анимация резкого появления */
+        /* Анимация резкого появления и тряски */
         .show-scary { display: flex !important; }
         .show-scary img {
             animation: scaryAppear 0.1s forwards, scaryShake 0.05s infinite;
@@ -63,7 +63,7 @@
         <button id="sendBtn">Отправить</button>
     </div>
 
-    <!-- Экран скримера. Обрати внимание: src="monster.jpg" -->
+    <!-- Ссылка на картинку, которая лежит в репозитории -->
     <div id="jumpscare">
         <img src="monster.jpg" alt="scary">
     </div>
@@ -73,51 +73,40 @@
         const startScreen = document.getElementById('startScreen');
         const jumpscare = document.getElementById('jumpscare');
 
-        // Функция для жуткого звука
         function playScarySound() {
-            // 1. Шепот "I see you" через синтезатор речи
+            // Голос "I see you"
             if ('speechSynthesis' in window) {
                 const utterance = new SpeechSynthesisUtterance("I see you");
                 utterance.lang = 'en-US';
-                utterance.rate = 0.7; // Медленно
-                utterance.pitch = 0.1; // Очень низкий, жуткий голос
+                utterance.rate = 0.6; 
+                utterance.pitch = 0.1; 
                 utterance.volume = 1;
                 window.speechSynthesis.speak(utterance);
             }
 
-            // 2. Резкий скрежет через Web Audio API (начинается через полсекунды)
+            // Скрежет
             setTimeout(() => {
                 try {
                     const ctx = new (window.AudioContext || window.webkitAudioContext)();
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
-                    
                     osc.type = 'sawtooth';
                     osc.frequency.setValueAtTime(800, ctx.currentTime);
                     osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 1.5);
-                    
                     gain.gain.setValueAtTime(0.5, ctx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.5);
-                    
                     osc.connect(gain);
                     gain.connect(ctx.destination);
                     osc.start();
                     osc.stop(ctx.currentTime + 1.5);
                 } catch(e) {}
-            }, 1500); // Скрежет начнется, когда голос скажет "you"
+            }, 1500);
         }
 
         sendBtn.addEventListener('click', () => {
-            // Прячем начальный экран
             startScreen.style.display = 'none';
-            
-            // Показываем картинку
             jumpscare.classList.add('show-scary');
-            
-            // Включаем звуки
             playScarySound();
-
-            // Вибрация на телефоне
             if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 1000]);
         });
     </script>
